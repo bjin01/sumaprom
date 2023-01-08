@@ -25,7 +25,10 @@ func Login(method string, args Sumalogin) (reply SumaSessionKey, err error) {
 
 	resp, err := request.MakeRequest(buf)
 	if err != nil {
-		log.Fatalf("Login API error: %s\n", err)
+		log.Fatalf("Login Request error: %s\n", err)
+	}
+	if resp.StatusCode != 200 {
+		log.Fatalf("Login SUMA API failed. Status code: %d\n", resp.StatusCode)
 	}
 
 	err = xml.DecodeClientResponse(resp.Body, &reply)

@@ -15,7 +15,12 @@ import (
 )
 
 func CreateSumainfo(server string, userid string, pwd string) *Sumaconf {
-	var key = []byte("A8CA6E5155A14BB0D8F4E7CE0E23B8A2")
+	var key []byte
+	if os.Getenv("SUMAPROM_ENCRYPT") != "" {
+		key = []byte(os.Getenv("SUMAPROM_ENCRYPT"))
+	} else {
+		key = []byte("A8CA6E5155A14BB0D8F4E7CE0E23B8A2")
+	}
 	return &Sumaconf{
 		Server: server,
 		Userid: userid,
@@ -31,7 +36,8 @@ func check(e error) {
 	}
 }
 
-func PromptUser() {
+func PromptUser(create_config *string) {
+	fmt.Printf("Create or update config file: %s\n", *create_config)
 	var pwd []byte
 	var server, userid, password string
 	fmt.Println("Enter SUMA Host name: ")
@@ -51,7 +57,7 @@ func PromptUser() {
 		log.Fatal(err)
 	}
 
-	f, err := os.Create("./suma.conf")
+	f, err := os.Create(*create_config)
 	check(err)
 
 	_, err = f.Write(out)

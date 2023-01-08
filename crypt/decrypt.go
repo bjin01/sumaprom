@@ -7,12 +7,33 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"gopkg.in/yaml.v3"
 )
 
 func (d *Sumaconf) Decrypt_Sumaconf(conf_file *string) Sumaconf {
-	var key = []byte("A8CA6E5155A14BB0D8F4E7CE0E23B8A2")
+	// head -c16 </dev/urandom|xxd -p -u
+
+	/* getEnv := func(key string) {
+		val, ok := os.LookupEnv(key)
+		if !ok {
+			fmt.Printf("%s not set\n", key)
+		} else {
+			fmt.Printf("%s=%s\n", key, val)
+		}
+	}
+
+	getEnv("SUMAPROM_ENCRYPT") */
+	fmt.Printf("conf_file %s\n", *conf_file)
+	var key []byte
+	if os.Getenv("SUMAPROM_ENCRYPT") != "" {
+		key = []byte(os.Getenv("SUMAPROM_ENCRYPT"))
+	} else {
+		log.Printf("Use default keystring\n")
+		key = []byte("A8CA6E5155A14BB0D8F4E7CE0E23B8A2")
+	}
+
 	yfile, err := ioutil.ReadFile(*conf_file)
 	if err != nil {
 		log.Fatal(err)

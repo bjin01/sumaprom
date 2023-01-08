@@ -24,6 +24,20 @@ git clone https://github.com/bjin01/sumaprom.git
 ```
 go run main.go -create-sumaconf suma.conf
 ```
+## Optional: use your own keystring for password encryption:
+Generate a 32 bytes keystring on linux:
+```
+head -c16 </dev/urandom|xxd -p -u
+```
+Set the OS environment variable:
+```
+export SUMAPROM_ENCRYPT=`head -c16 </dev/urandom|xxd -p -u`
+```
+Or use one-liner command:
+```
+export SUMAPROM_ENCRYPT=`head -c16 </dev/urandom|xxd -p -u`
+```
+
 
 ## Run in source code mode (go v1.19 required):
 ```

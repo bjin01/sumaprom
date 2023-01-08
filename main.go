@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"sumaprom/collector"
 	"sumaprom/crypt"
 
@@ -47,11 +48,10 @@ func init() {
 		log.Fatal("sumaconf not provided or create a new sumaconf. Exit")
 		step = "exit"
 	} else if len(*conf_file) == 0 && len(*create_config) > 0 {
-		crypt.PromptUser()
+		crypt.PromptUser(create_config)
 		step = "create_config"
 	} else {
 		sumaconf = sumaconf.Decrypt_Sumaconf(conf_file)
-		fmt.Printf("server: %s\nuserid: %s\npassword: %s\n", sumaconf.Server, sumaconf.Userid, sumaconf.Password)
 		step = "start_collect"
 	}
 
@@ -60,13 +60,28 @@ func init() {
 func main() {
 
 	if step == "start_collect" {
-		fmt.Printf("aaa %s %s %s\n", sumaconf.Server, sumaconf.Userid, sumaconf.Password)
 		MypkgsCollector := new(collector.PkgsCollector)
 		MypkgsCollector.Sumainfo = sumaconf
-		prometheus.MustRegister(MypkgsCollector)
 
+		var port int
+		var err error
+		if os.Getenv("SUMAPROM_PORT") != "" {
+			port, err = strconv.Atoi(os.Getenv("SUMAPROM_PORT"))
+			if err != nil {
+				log.Fatalf("Failed to get SUMAPROM_PORT number. %s\n", os.Getenv("SUMAPROM_PORT"))
+			}
+			fmt.Printf("port num: %d\n", port)
+			if port < 1024 || port > 30000 {
+				log.Fatalf("The port %d you selected is not good. Choose a port between 1024 and 30000 on linux.\n", port)
+			}
+		} else {
+			port = 8888
+		}
+
+		prometheus.MustRegister(MypkgsCollector)
 		http.Handle("/metrics", promhttp.Handler())
-		log.Fatal(http.ListenAndServe(":8888", nil))
+		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
+
 	}
 
 }
