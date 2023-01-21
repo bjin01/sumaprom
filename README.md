@@ -10,7 +10,13 @@ Although the newest SUSE Manager / Uyuni already provides http rest api but xmlr
 The API  credentials will be provded through a configuration file in which the server, userid and password are stored. 
 To make the password not stored as plain text in config file the program also provides a parameter to generate a encrypted and base64 hashed string. This hash string will be decrypted when the program starts to run.
 
-At the moment the program is __listening on port 8888__
+The program is __default listening port is 8888__
+
+Use OS environment variable to specify a custom port prior program start: 
+```
+export SUMAPROM_PORT=3333
+```
+
 
 ![grafana dashboard](./screenshots/sumaprom.png)
 
@@ -39,12 +45,21 @@ export SUMAPROM_ENCRYPT=`head -c16 </dev/urandom|xxd -p -u`
 ```
 
 
-## Run in source code mode (go v1.19 required):
+## Run the program:
 ```
-go run main.go -sumaconf suma.conf
+sumaprom -sumaconf suma.conf
+```
+
+## Install systemd service for the sumaprom exporter:
+```
+cp sumaprom.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl start sumaprom.service
 ```
 
 ## Prometheus configuration needed:
+Scraping interval 5 minutes is recommended because shorter interval will stress SUSE Manager API.
+
 /etc/prometheus/prometheus.yml
 ```
 - job_name: mysuma
@@ -55,5 +70,5 @@ go run main.go -sumaconf suma.conf
         - 192.168.122.1:8888
 
 ```
-Don`t forget to reload prometheus.service
+Don`t forget to restart prometheus.service
 
